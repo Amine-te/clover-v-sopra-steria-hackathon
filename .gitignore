@@ -1,0 +1,19 @@
+# Secrets — never commit
+.env
+samples/.env
+*.pem
+credentials
+
+# Workshop screenshots — contain the real shared Kiro Pro password / URLs
+materials/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Sample scratch output
+samples/_downloads/
+samples/output/
+samples/*.out.json
