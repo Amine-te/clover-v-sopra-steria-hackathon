@@ -61,7 +61,7 @@ src/clover_v_sopra_steria_hackathon/
   wearable/            simulated bracelet data
   agent/               Strands tools and agent, deterministic pipeline
   signals/             optional engagement signal
-  api.py               backend entry point (serves the frontend)
+  api.py               backend entry point (serves the frontend); `uv run clover-api` starts it
 frontend/
   (Next.js / React)    caregiver UI, timeline view, follow-ups, report download
 tests/

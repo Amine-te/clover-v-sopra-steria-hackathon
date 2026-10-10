@@ -1,6 +1,7 @@
 # Secrets — never commit
 .env
 samples/.env
+frontend/.env.local
 *.pem
 credentials
 
@@ -12,8 +13,17 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+.pytest_cache/
+.hypothesis/
+
+# Frontend (Next.js)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
 
 # Sample scratch output
 samples/_downloads/
 samples/output/
 samples/*.out.json
+
+.kiro/

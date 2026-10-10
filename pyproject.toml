@@ -10,14 +10,24 @@ requires-python = ">=3.11"
 dependencies = [
     "boto3>=1.43.111",
     "fastapi>=0.143.0",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.7",
     "pytest>=9.1.1",
     "python-multipart>=0.0.32",
+    "strands-agents>=1.0",
     "uvicorn>=0.54.0",
 ]
 
 [project.scripts]
 clover-v-sopra-steria-hackathon = "clover_v_sopra_steria_hackathon:main"
+clover-api = "clover_v_sopra_steria_hackathon.api:run"
 
 [build-system]
 requires = ["uv_build>=0.12.21,<0.13.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "hypothesis>=6.168.5",
+]
