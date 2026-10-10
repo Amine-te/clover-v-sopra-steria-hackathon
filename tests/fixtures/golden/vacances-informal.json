@@ -1,0 +1,11 @@
+{
+  "fixture": "vacances-informal",
+  "expected_categories": ["meals_hydration", "medication", "mood_behavior"],
+  "key_facts": ["peu d'appétit à midi", "a bien bu", "cachet pour le cœur pris", "content devant le foot"],
+  "canned_response": [
+    {"category": "meals_hydration", "value": "Peu d'appétit, a juste picoré deux-trois bouchées de pâtes à midi", "severity": "watch", "confidence": 0.75, "transcript_span": "ce midi il a juste picoré, deux-trois bouchées de pâtes"},
+    {"category": "meals_hydration", "value": "A bien bu, de l'eau et un jus d'orange", "severity": "info", "confidence": 0.8, "transcript_span": "il a bien bu, de l'eau et un jus d'orange"},
+    {"category": "medication", "value": "A pris son cachet pour le cœur à midi", "severity": "info", "confidence": 0.85, "transcript_span": "il a pris son cachet pour le cœur comme d'hab à midi"},
+    {"category": "mood_behavior", "value": "Content devant le match de foot, a bien ri", "severity": "info", "confidence": 0.75, "transcript_span": "il était content, il a bien ri"}
+  ]
+}

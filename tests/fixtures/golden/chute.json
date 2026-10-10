@@ -1,0 +1,12 @@
+{
+  "fixture": "chute",
+  "expected_categories": ["mobility_falls", "pain", "appointment", "sleep"],
+  "key_facts": ["chute dans la salle de bain", "douleur à la hanche", "rendez-vous médecin demain", "a bien dormi"],
+  "canned_response": [
+    {"category": "mobility_falls", "value": "A glissé dans la salle de bain en sortant de la douche et est tombé sur le côté gauche", "severity": "urgent", "confidence": 0.95, "transcript_span": "il a glissé dans la salle de bain en sortant de la douche", "event_time": "2026-10-10T10:00:00+02:00"},
+    {"category": "pain", "value": "A mal à la hanche et boite un peu", "severity": "watch", "confidence": 0.85, "transcript_span": "il a mal à la hanche et il boite un peu"},
+    {"category": "mood_behavior", "value": "Un peu inquiet, ne veut plus aller seul aux toilettes", "severity": "info", "confidence": 0.7, "transcript_span": "il ne veut plus aller seul aux toilettes"},
+    {"category": "appointment", "value": "Rendez-vous demandé au cabinet du docteur Martin pour demain matin", "severity": "info", "confidence": 0.8, "transcript_span": "J'ai appelé le cabinet du docteur Martin pour avoir un rendez-vous demain matin"},
+    {"category": "sleep", "value": "A bien dormi la nuit dernière, environ huit heures", "severity": "info", "confidence": 0.8, "transcript_span": "La nuit dernière il avait bien dormi, environ huit heures"}
+  ]
+}

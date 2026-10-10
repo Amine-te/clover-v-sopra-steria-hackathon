@@ -1,0 +1,12 @@
+{
+  "fixture": "refus-traitement",
+  "expected_categories": ["medication", "mood_behavior", "meals_hydration"],
+  "key_facts": ["refus du comprimé du soir", "traitement du matin pris", "agitée et triste", "a peu mangé"],
+  "canned_response": [
+    {"category": "medication", "value": "A refusé de prendre son comprimé du soir", "severity": "watch", "confidence": 0.9, "transcript_span": "elle a refusé de prendre son comprimé du soir"},
+    {"category": "medication", "value": "Traitement du matin pris normalement", "severity": "info", "confidence": 0.85, "transcript_span": "Le traitement du matin a été pris normalement"},
+    {"category": "mood_behavior", "value": "Agitée et triste toute la journée, a pleuré deux fois", "severity": "watch", "confidence": 0.8, "transcript_span": "Elle était agitée et triste toute la journée, elle a pleuré deux fois"},
+    {"category": "meals_hydration", "value": "A très peu mangé, un yaourt à midi et quelques cuillères de purée", "severity": "watch", "confidence": 0.8, "transcript_span": "Elle a très peu mangé, seulement un yaourt à midi et quelques cuillères de purée ce soir"},
+    {"category": "meals_hydration", "value": "A bu trois verres d'eau", "severity": "info", "confidence": 0.8, "transcript_span": "elle a bu trois verres d'eau"}
+  ]
+}

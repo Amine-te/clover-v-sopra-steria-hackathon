@@ -6,6 +6,7 @@ Each build step of Karis is documented in `docs/steps/`: what was set up, how to
 
 1. [000 Project foundations](steps/000-project-foundations.md): backend skeleton, config, shared models, minimal frontend, env templates.
 2. [001 Voice capture](steps/001-voice-capture.md): S3 upload, French batch transcription, cached-transcript fallback, retry, `/report-voice` page.
+3. [002 Fact extraction](steps/002-extraction.md): Bedrock Converse with Claude Haiku 4.5, strict-JSON prompt, code-enforced grounding, `POST /api/reports/extract`, "Analyser les faits" on `/report-voice`.
 
 ## Convention
 

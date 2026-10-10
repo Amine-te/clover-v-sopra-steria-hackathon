@@ -1,0 +1,11 @@
+{
+  "fixture": "agite-nuit",
+  "expected_categories": ["sleep", "mood_behavior"],
+  "key_facts": ["levées répétées la nuit", "agitation vers deux heures", "presque pas dormi", "pas de chute"],
+  "canned_response": [
+    {"category": "sleep", "value": "S'est levée plusieurs fois, au moins quatre ou cinq fois", "severity": "watch", "confidence": 0.85, "transcript_span": "Elle s'est levée plusieurs fois, au moins quatre ou cinq fois"},
+    {"category": "mood_behavior", "value": "Très agitée vers deux heures du matin et a crié dans le couloir", "severity": "watch", "confidence": 0.8, "transcript_span": "Vers deux heures du matin elle était très agitée et elle a crié dans le couloir", "event_time": "2026-10-10T02:00:00+02:00"},
+    {"category": "sleep", "value": "N'a presque pas dormi, endormie vers six heures", "severity": "watch", "confidence": 0.8, "transcript_span": "Elle n'a presque pas dormi"},
+    {"category": "mobility_falls", "value": "N'a pas chuté", "severity": "info", "confidence": 0.75, "transcript_span": "Elle n'a pas chuté"}
+  ]
+}

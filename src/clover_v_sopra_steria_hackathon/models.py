@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Annotated, Any, Literal, Optional
 
+from datetime import datetime, timezone
+
 from pydantic import (
     AwareDatetime,
     BaseModel,
@@ -88,6 +90,30 @@ class VoiceReportResponse(_ContractModel):
     audio_s3_key: Optional[str]
     transcript: str
     source: Literal["transcribe", "cache"]
+
+
+class ExtractRequest(_ContractModel):
+    """Body of POST /api/reports/extract. `reported_at` defaults to now (UTC) when omitted.
+
+    An empty or whitespace-only transcript is accepted by the model so the route can return the
+    feature's own French 422 detail rather than a generic Pydantic validation error.
+    """
+
+    transcript: str
+    subject_id: str = Field(min_length=1)
+    reported_by: str = Field(min_length=1)
+    reported_at: Optional[AwareDatetime] = None
+
+    def resolved_reported_at(self) -> datetime:
+        """The report time to use: the supplied aware datetime, or now in UTC."""
+        return self.reported_at or datetime.now(timezone.utc)
+
+
+class ExtractResponse(_ContractModel):
+    """Successful extraction: the Observations found and their count."""
+
+    observations: list[Observation]
+    count: int
 
 
 class VoiceReportError(_ContractModel):

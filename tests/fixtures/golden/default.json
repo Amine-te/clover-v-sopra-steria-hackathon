@@ -1,0 +1,12 @@
+{
+  "fixture": "default",
+  "expected_categories": ["sleep", "meals_hydration", "medication", "mobility_falls"],
+  "key_facts": ["réveil nocturne", "faible hydratation l'après-midi", "médicaments pris", "promenade"],
+  "canned_response": [
+    {"category": "sleep", "value": "Réveil vers trois heures, rendormie vers cinq heures", "severity": "watch", "confidence": 0.85, "transcript_span": "elle s'est réveillée vers trois heures et elle n'a pas réussi à se rendormir avant cinq heures"},
+    {"category": "meals_hydration", "value": "A bien mangé à midi, la soupe et le poisson", "severity": "info", "confidence": 0.8, "transcript_span": "à midi elle a bien mangé, la soupe et le poisson"},
+    {"category": "meals_hydration", "value": "A très peu bu dans l'après-midi, à peine un verre d'eau", "severity": "watch", "confidence": 0.75, "transcript_span": "elle a très peu bu dans l'après-midi, à peine un verre d'eau"},
+    {"category": "medication", "value": "A pris ses médicaments du matin et du soir", "severity": "info", "confidence": 0.9, "transcript_span": "Elle a pris ses médicaments du matin et du soir"},
+    {"category": "mobility_falls", "value": "Petite promenade dans le jardin d'une vingtaine de minutes", "severity": "info", "confidence": 0.8, "transcript_span": "elle a fait une petite promenade dans le jardin avec moi, une vingtaine de minutes"}
+  ]
+}

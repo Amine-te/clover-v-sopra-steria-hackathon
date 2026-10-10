@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
+  extractObservations,
   retryTranscription,
   submitVoiceReport,
+  type Observation,
   type VoiceReport,
   type VoiceReportFailure,
   type VoiceReportResult,
@@ -16,6 +18,16 @@ type PageState =
   | { kind: "loading"; message: string }
   | { kind: "done"; report: VoiceReport }
   | { kind: "error"; error: VoiceReportFailure };
+
+type ExtractState =
+  | { kind: "idle" }
+  | { kind: "loading" }
+  | { kind: "done"; observations: Observation[] }
+  | { kind: "error"; detail: string };
+
+// Fixed demo identities for this slice; real subject/caregiver selection comes later.
+const DEMO_SUBJECT_ID = "subject-demo-1";
+const DEMO_REPORTER_ID = "caregiver-demo-1";
 
 // Recorder formats in order of preference, with the extension the backend expects.
 const RECORDER_FORMATS: { mimeType: string; ext: string }[] = [
@@ -39,6 +51,7 @@ function canRecord(): boolean {
 /** Minimal voice report page: record or upload a French report, then show its transcript. */
 export default function ReportVoicePage() {
   const [state, setState] = useState<PageState>({ kind: "idle" });
+  const [extract, setExtract] = useState<ExtractState>({ kind: "idle" });
   const [notice, setNotice] = useState<string | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -64,7 +77,18 @@ export default function ReportVoicePage() {
   const busy = state.kind === "loading";
 
   function show(result: VoiceReportResult) {
+    setExtract({ kind: "idle" });
     setState(result.ok ? { kind: "done", report: result.report } : { kind: "error", error: result.error });
+  }
+
+  async function analyse(transcript: string) {
+    setExtract({ kind: "loading" });
+    const result = await extractObservations({
+      transcript,
+      subject_id: DEMO_SUBJECT_ID,
+      reported_by: DEMO_REPORTER_ID,
+    });
+    setExtract(result.ok ? { kind: "done", observations: result.observations } : { kind: "error", detail: result.detail });
   }
 
   async function send(file: Blob, filename: string) {
@@ -132,6 +156,13 @@ export default function ReportVoicePage() {
   if (notice) status = notice;
   else if (state.kind === "recording") status = "Enregistrement en cours… Cliquez sur « Arrêter et envoyer ».";
   else if (state.kind === "loading") status = state.message;
+  else if (extract.kind === "loading") status = "Analyse des faits en cours, merci de patienter…";
+  else if (extract.kind === "error") status = extract.detail;
+  else if (extract.kind === "done")
+    status =
+      extract.observations.length > 0
+        ? `${extract.observations.length} fait(s) extrait(s).`
+        : "Aucun fait à signaler dans cette transcription.";
   else if (state.kind === "done")
     status = state.report.source === "cache" ? "Transcription de démonstration reçue." : "Transcription terminée.";
   else if (state.kind === "error") status = state.error.detail;
@@ -182,6 +213,30 @@ export default function ReportVoicePage() {
         <section aria-labelledby="transcript-heading">
           <h2 id="transcript-heading">Transcription</h2>
           <blockquote lang="fr">{state.report.transcript || "(aucun texte reconnu)"}</blockquote>
+          <button
+            type="button"
+            onClick={() => analyse(state.report.transcript)}
+            disabled={extract.kind === "loading" || !state.report.transcript.trim()}
+          >
+            Analyser les faits
+          </button>
+        </section>
+      )}
+
+      {extract.kind === "done" && (
+        <section aria-labelledby="facts-heading">
+          <h2 id="facts-heading">Faits extraits</h2>
+          {extract.observations.length > 0 ? (
+            <ul lang="fr">
+              {extract.observations.map((obs) => (
+                <li key={obs.id}>
+                  [{obs.severity}] {obs.category} — {obs.value}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p lang="fr">Aucun fait à signaler.</p>
+          )}
         </section>
       )}
     </main>

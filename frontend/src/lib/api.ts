@@ -153,3 +153,74 @@ export function submitVoiceReport(
 export function retryTranscription(reportId: string): Promise<VoiceReportResult> {
   return postVoice(`/api/reports/${encodeURIComponent(reportId)}/transcribe`);
 }
+
+// Fact extraction (POST /api/reports/extract).
+
+// The backend makes one Bedrock Converse call; allow generous margin for it.
+const EXTRACT_TIMEOUT_MS = 60_000;
+
+export type Observation = {
+  id: string;
+  timestamp: string;
+  reported_at: string;
+  subject_id: string;
+  category: string;
+  value: string;
+  severity: "info" | "watch" | "urgent";
+  source: string;
+  reported_by: string;
+  confidence: number;
+  transcript_span: string;
+};
+
+export type ExtractPayload = {
+  transcript: string;
+  subject_id: string;
+  reported_by: string;
+  reported_at?: string;
+};
+
+export type ExtractResult =
+  | { ok: true; observations: Observation[] }
+  | { ok: false; detail: string };
+
+function isObservation(value: unknown): value is Observation {
+  return (
+    isRecord(value) &&
+    typeof value.id === "string" &&
+    typeof value.category === "string" &&
+    typeof value.value === "string" &&
+    typeof value.severity === "string"
+  );
+}
+
+/** POST /api/reports/extract: turn a transcript into Observations, mapping every outcome to a typed result. */
+export async function extractObservations(payload: ExtractPayload): Promise<ExtractResult> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), EXTRACT_TIMEOUT_MS);
+  let response: Response;
+  let data: unknown;
+  try {
+    response = await fetch(`${getApiBaseUrl()}/api/reports/extract`, {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    data = await response.json().catch(() => null);
+  } catch {
+    return { ok: false, detail: `Impossible de joindre le serveur à ${getApiBaseUrl()}.` };
+  } finally {
+    clearTimeout(timer);
+  }
+
+  if (response.ok && isRecord(data) && Array.isArray(data.observations)) {
+    return { ok: true, observations: data.observations.filter(isObservation) };
+  }
+  const detail =
+    isRecord(data) && typeof data.detail === "string"
+      ? data.detail
+      : `Erreur du serveur (HTTP ${response.status}).`;
+  return { ok: false, detail };
+}
