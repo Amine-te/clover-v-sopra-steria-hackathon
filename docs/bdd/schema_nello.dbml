@@ -1,0 +1,303 @@
+// Schéma Nello — transcrit depuis schema_entites_nello.png
+// Convention DBML : colonnes nullable par défaut, [not null] sinon.
+// FK dont la table cible n'est pas sur le schéma : notées en note, sans Ref.
+
+// ═══════════════════════════ association ═══════════════════════════
+
+Table association.association {
+  id                      uuid      [pk]
+  category_id             uuid      [not null, note: 'FK — cible hors schéma']
+  app_key                 varchar   [not null, note: 'FK — cible hors schéma']
+  name                    varchar   [not null]
+  logo_path               varchar
+  phone_number            varchar
+  opening_hours           varchar
+  website_url             varchar
+  external_redirect_url   varchar
+  external_redirect_label varchar
+  city                    varchar
+  country                 varchar
+  postal_code             varchar
+  street                  varchar
+  is_business_partner     boolean   [not null]
+  partner_description     varchar
+  description             varchar   [not null]
+  created_at              timestamp [not null]
+  updated_at              timestamp
+  deleted_at              timestamp
+}
+
+// ═══════════════════════════ contact ═══════════════════════════
+
+Table contact.contact {
+  id                        uuid      [pk]
+  creator_id                uuid      [not null, note: 'FK — cible hors schéma']
+  status                    varchar   [not null]
+  status_changed_at         timestamp [not null]
+  organization_id           uuid      [not null, note: 'FK — cible hors schéma']
+  is_public                 boolean   [not null]
+  firstname                 varchar   [not null]
+  lastname                  varchar
+  email                     varchar
+  mobile_phone_number       varchar
+  landline_phone_number     varchar
+  city                      varchar
+  country                   varchar
+  postal_code               varchar
+  street                    varchar
+  profile_picture_path      varchar
+  created_at                timestamp [not null]
+  updated_at                timestamp
+  deleted_at                timestamp
+  fullname                  varchar   [note: 'Colonne générée (GEN)']
+  modification_requested_at timestamp
+}
+
+// ═══════════════════════════ event ═══════════════════════════
+
+Table event.event {
+  id                        uuid      [pk]
+  creator_id                uuid      [not null, note: 'FK — cible hors schéma']
+  theme_id                  uuid      [not null]
+  recurrence_id             uuid
+  name                      varchar   [not null]
+  description               varchar
+  start_date                timestamp [not null]
+  end_date                  timestamp [not null]
+  street                    varchar
+  city                      varchar
+  country                   varchar
+  postal_code               varchar
+  status                    varchar   [not null]
+  status_changed_at         timestamp [not null]
+  is_public                 boolean   [not null]
+  created_at                timestamp [not null]
+  updated_at                timestamp
+  deleted_at                timestamp
+  modification_requested_at timestamp
+}
+
+Table event.event_theme {
+  id      uuid    [pk]
+  app_key varchar [note: 'FK — cible hors schéma']
+  label   varchar [not null]
+}
+
+Table event.event_recurrence {
+  id             uuid      [pk]
+  recurrence     varchar   [not null]
+  deactivated_at timestamp
+}
+
+Table event.event_alert {
+  id                            uuid      [pk]
+  event_id                      uuid      [not null]
+  planned_at                    timestamp [not null]
+  emails_handled_at             timestamp
+  push_notifications_handled_at timestamp
+  queued_at                     timestamp
+  delta                         int       [not null]
+  created_at                    timestamp [not null]
+  updated_at                    timestamp
+  deleted_at                    timestamp
+}
+
+Ref: event.event.theme_id      > event.event_theme.id
+Ref: event.event.recurrence_id > event.event_recurrence.id
+Ref: event.event_alert.event_id > event.event.id
+
+// ═══════════════════════════ content ═══════════════════════════
+
+Table content.content {
+  id                        uuid      [pk]
+  external_id               varchar   [not null, unique]
+  app_key                   varchar   [note: 'FK — cible hors schéma']
+  title                     varchar   [not null]
+  source_key                varchar   [not null]
+  author                    varchar
+  reading_time              int
+  banner_picture_path       varchar
+  published_at              timestamp
+  hidden_at                 timestamp
+  last_modified_at          timestamp
+  category_id               uuid
+  highlighted               boolean   [not null]
+  modification_requested_at timestamp
+  created_at                timestamp [not null]
+  updated_at                timestamp
+  deleted_at                timestamp
+}
+
+Table content.content_source {
+  key           varchar   [pk]
+  contact_email varchar   [not null]
+  display_name  varchar   [not null]
+  created_at    timestamp [not null]
+  updated_at    timestamp
+  deleted_at    timestamp
+}
+
+Table content.content_category {
+  id         uuid      [pk]
+  label      varchar   [not null, unique]
+  app_key    varchar   [not null, note: 'FK — cible hors schéma']
+  created_at timestamp [not null]
+  updated_at timestamp
+  deleted_at timestamp
+}
+
+Table content.typology {
+  key        varchar   [pk]
+  app_key    varchar   [note: 'FK — cible hors schéma']
+  created_at timestamp [not null]
+  updated_at timestamp
+  deleted_at timestamp
+}
+
+Table content.content_tag {
+  content_id uuid      [not null]
+  tag_id     uuid      [not null, note: 'FK — cible hors schéma']
+  created_at timestamp [not null]
+  updated_at timestamp
+  deleted_at timestamp
+
+  indexes {
+    (content_id, tag_id) [pk]
+  }
+}
+
+Table content.content_group {
+  content_id uuid      [not null]
+  group_id   uuid      [not null, note: 'FK — cible hors schéma']
+  created_at timestamp [not null]
+  updated_at timestamp
+  deleted_at timestamp
+
+  indexes {
+    (content_id, group_id) [pk]
+  }
+}
+
+Table content.content_typology {
+  content_id   uuid      [not null]
+  typology_key varchar   [not null]
+  created_at   timestamp [not null]
+  updated_at   timestamp
+  deleted_at   timestamp
+
+  indexes {
+    (content_id, typology_key) [pk]
+  }
+}
+
+Table content.content_reaction {
+  content_id uuid      [not null]
+  member_id  uuid      [not null, note: 'FK — cible hors schéma']
+  label      varchar
+  created_at timestamp [not null]
+  updated_at timestamp
+  deleted_at timestamp
+
+  indexes {
+    (content_id, member_id) [pk]
+  }
+}
+
+Ref: content.content.source_key           > content.content_source.key
+Ref: content.content.category_id          > content.content_category.id
+Ref: content.content_tag.content_id       > content.content.id
+Ref: content.content_group.content_id     > content.content.id
+Ref: content.content_typology.content_id  > content.content.id
+Ref: content.content_typology.typology_key > content.typology.key
+Ref: content.content_reaction.content_id  > content.content.id
+
+// ═══════════════════════════ solution ═══════════════════════════
+
+Table solution.solution {
+  id                      uuid      [pk]
+  category_id             uuid      [not null, note: 'FK — cible hors schéma']
+  app_key                 varchar   [not null, note: 'FK — cible hors schéma']
+  name                    varchar   [not null]
+  logo_path               varchar
+  phone_number            varchar
+  opening_hours           varchar
+  website_url             varchar
+  external_redirect_url   varchar
+  external_redirect_label varchar
+  city                    varchar
+  country                 varchar
+  postal_code             varchar
+  street                  varchar
+  is_business_partner     boolean   [not null]
+  partner_description     varchar
+  description             varchar   [not null]
+  created_at              timestamp [not null]
+  updated_at              timestamp
+  deleted_at              timestamp
+}
+
+// ═══════════════════════════ folder ═══════════════════════════
+
+Table folder.folder {
+  id                        uuid      [pk]
+  name                      varchar   [not null]
+  creator_id                uuid      [not null, note: 'FK — cible hors schéma']
+  status                    varchar   [not null]
+  status_changed_at         timestamp [not null]
+  is_public                 boolean   [not null]
+  created_at                timestamp [not null]
+  updated_at                timestamp
+  deleted_at                timestamp
+  modification_requested_at timestamp
+}
+
+Table folder.folder_file {
+  id                        uuid      [pk]
+  path                      varchar   [not null, unique]
+  name                      varchar   [not null]
+  size                      int       [not null]
+  mime_type                 varchar   [not null]
+  folder_id                 uuid      [not null]
+  creator_id                uuid      [not null, note: 'FK — cible hors schéma']
+  uploaded_at               timestamp [not null]
+  created_at                timestamp [not null]
+  updated_at                timestamp
+  deleted_at                timestamp
+  modification_requested_at timestamp
+}
+
+Ref: folder.folder_file.folder_id > folder.folder.id // déduit du nommage, pas de trait sur le schéma
+
+// ═══════════════════════════ note ═══════════════════════════
+
+Table note.note {
+  id                        uuid      [pk]
+  name                      varchar   [not null]
+  content                   varchar
+  creator_id                uuid      [not null, note: 'FK — cible hors schéma']
+  status                    varchar   [not null]
+  status_changed_at         timestamp [not null]
+  is_public                 boolean   [not null]
+  pinned_at                 timestamp
+  created_at                timestamp [not null]
+  updated_at                timestamp
+  deleted_at                timestamp
+  modification_requested_at timestamp
+}
+
+Table note.note_file {
+  id                        uuid      [pk]
+  path                      varchar   [not null, unique]
+  name                      varchar   [not null]
+  size                      int       [not null]
+  mime_type                 varchar   [not null]
+  note_id                   uuid      [not null]
+  creator_id                uuid      [not null, note: 'FK — cible hors schéma']
+  uploaded_at               timestamp [not null]
+  created_at                timestamp [not null]
+  updated_at                timestamp
+  deleted_at                timestamp
+  modification_requested_at timestamp
+}
+
+Ref: note.note_file.note_id > note.note.id // déduit du nommage, pas de trait sur le schéma
