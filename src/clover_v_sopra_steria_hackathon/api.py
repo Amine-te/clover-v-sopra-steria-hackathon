@@ -10,6 +10,7 @@ import uvicorn
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .audio.routes import router as voice_router
 from .config import Settings, get_settings
 
 PACKAGE_NAME = "clover-v-sopra-steria-hackathon"
@@ -40,8 +41,12 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
             "notify_channel": settings.notify_channel,
         }
 
+    # Route dependencies read the settings of this app instance (see audio.routes.get_settings_dep).
+    app.state.settings = settings
+
     # Every feature route is registered under /api.
     api_router = APIRouter(prefix="/api")
+    api_router.include_router(voice_router)
     app.include_router(api_router)
 
     return app

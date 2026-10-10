@@ -5,6 +5,7 @@ Each build step of Karis is documented in `docs/steps/`: what was set up, how to
 ## Steps
 
 1. [000 Project foundations](steps/000-project-foundations.md): backend skeleton, config, shared models, minimal frontend, env templates.
+2. [001 Voice capture](steps/001-voice-capture.md): S3 upload, French batch transcription, cached-transcript fallback, retry, `/report-voice` page.
 
 ## Convention
 

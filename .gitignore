@@ -27,3 +27,4 @@ samples/output/
 samples/*.out.json
 
 .kiro/
+.agents/

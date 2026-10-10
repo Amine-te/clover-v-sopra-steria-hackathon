@@ -46,3 +46,110 @@ export async function getHealth(): Promise<HealthResponse> {
     clearTimeout(timer);
   }
 }
+
+// Voice reports (POST /api/reports/voice and /api/reports/{id}/transcribe).
+
+// Transcribe can take up to 180 s server-side; leave margin for upload and read-back.
+const VOICE_TIMEOUT_MS = 240_000;
+
+export type VoiceReport = {
+  report_id: string;
+  audio_s3_key: string | null;
+  transcript: string;
+  source: "transcribe" | "cache";
+};
+
+export type VoiceReportFailure = {
+  report_id: string | null;
+  audio_s3_key: string | null;
+  detail: string;
+  retryable: boolean;
+};
+
+export type VoiceReportResult =
+  | { ok: true; report: VoiceReport }
+  | { ok: false; error: VoiceReportFailure };
+
+function failure(detail: string, extra: Partial<VoiceReportFailure> = {}): VoiceReportResult {
+  return {
+    ok: false,
+    error: { report_id: null, audio_s3_key: null, retryable: false, ...extra, detail },
+  };
+}
+
+function nullableString(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}
+
+/** Sends a voice report request and turns every outcome (including network errors) into a typed result. */
+async function postVoice(path: string, body?: FormData): Promise<VoiceReportResult> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), VOICE_TIMEOUT_MS);
+  let response: Response;
+  let data: unknown;
+  try {
+    response = await fetch(`${getApiBaseUrl()}${path}`, {
+      method: "POST",
+      headers: { Accept: "application/json" },
+      body,
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    data = await response.json().catch(() => null);
+  } catch {
+    return failure(`Impossible de joindre le serveur à ${getApiBaseUrl()}.`);
+  } finally {
+    clearTimeout(timer);
+  }
+
+  if (response.ok) {
+    if (
+      isRecord(data) &&
+      typeof data.report_id === "string" &&
+      typeof data.transcript === "string" &&
+      (data.source === "transcribe" || data.source === "cache")
+    ) {
+      return {
+        ok: true,
+        report: {
+          report_id: data.report_id,
+          audio_s3_key: nullableString(data.audio_s3_key),
+          transcript: data.transcript,
+          source: data.source,
+        },
+      };
+    }
+    return failure("Réponse inattendue du serveur.");
+  }
+
+  // FastAPI errors carry a French `detail`; 502 bodies also say whether a retry is possible.
+  const detail =
+    isRecord(data) && typeof data.detail === "string"
+      ? data.detail
+      : `Erreur du serveur (HTTP ${response.status}).`;
+  if (response.status === 502 && isRecord(data)) {
+    return failure(detail, {
+      report_id: nullableString(data.report_id),
+      audio_s3_key: nullableString(data.audio_s3_key),
+      retryable: data.retryable === true,
+    });
+  }
+  return failure(detail);
+}
+
+/** POST /api/reports/voice with the recording (multipart field `audio`) and an optional fixture name. */
+export function submitVoiceReport(
+  file: Blob,
+  filename: string,
+  fixture?: string,
+): Promise<VoiceReportResult> {
+  const form = new FormData();
+  form.append("audio", file, filename);
+  if (fixture) form.append("fixture", fixture);
+  return postVoice("/api/reports/voice", form);
+}
+
+/** POST /api/reports/{reportId}/transcribe: transcribe the stored audio again, without re-uploading. */
+export function retryTranscription(reportId: string): Promise<VoiceReportResult> {
+  return postVoice(`/api/reports/${encodeURIComponent(reportId)}/transcribe`);
+}

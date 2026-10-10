@@ -1,3 +1,4 @@
+import Link from "next/link";
 import HealthIndicator from "@/components/HealthIndicator";
 
 export default function Home() {
@@ -5,6 +6,9 @@ export default function Home() {
     <main>
       <h1>Karis</h1>
       <HealthIndicator />
+      <p>
+        <Link href="/report-voice">Enregistrer un rapport vocal</Link>
+      </p>
     </main>
   );
 }

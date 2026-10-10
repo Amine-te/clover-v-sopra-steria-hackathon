@@ -1,6 +1,6 @@
 # 001 Voice capture and transcription
 
-- **Status:** Draft
+- **Status:** Implemented
 - **Owner:**
 - **Needs:** 000
 
@@ -21,4 +21,4 @@ The caregiver records a short voice report; it is stored in S3 and transcribed t
 
 ## Open questions
 
-- Batch jobs only, or streaming later?
+- Batch jobs only, or streaming later? **Decided:** batch transcription only (one Transcribe job per report, output written to the bucket and read back with boto3). Streaming may come later. See `docs/steps/001-voice-capture.md`.

@@ -79,3 +79,21 @@ class SentMessage(_ContractModel):
     body: str
     observation_ids: list[str]
     sent_at: AwareDatetime
+
+
+class VoiceReportResponse(_ContractModel):
+    """Successful voice report: the stored audio key (null when not uploaded) and its transcript."""
+
+    report_id: str
+    audio_s3_key: Optional[str]
+    transcript: str
+    source: Literal["transcribe", "cache"]
+
+
+class VoiceReportError(_ContractModel):
+    """Failed voice report (HTTP 502). `retryable` is true when the audio is stored and can be re-transcribed."""
+
+    report_id: Optional[str]
+    audio_s3_key: Optional[str]
+    detail: str
+    retryable: bool
