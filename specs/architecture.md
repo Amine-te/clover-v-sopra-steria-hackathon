@@ -16,7 +16,7 @@ Caregiver voice ──► S3 + AWS Transcribe (fr-FR) ──► transcript
                            ┌──────────────────────────┴───────────┐
                      Timeline store (S3 JSON)               Messages (mock SMS / email)
                            │
-                     Timeline view (Streamlit)
+                     Timeline view (Next.js / React)
 ```
 
 Extraction, gap questions, guardrail, and routing run in that order. Missing facts send the caregiver a short follow-up before anything is stored or sent.
@@ -44,7 +44,7 @@ The report reads stored facts and bracelet data for the chosen period; it never 
 | S3 | Audio files, observation JSON |
 | Strands Agents | Orchestrates the steps as tools |
 | AgentCore | Optional hosting of the agent (last) |
-| Streamlit | UI |
+| Next.js (React) | Web UI |
 
 ## Package layout (target)
 
@@ -61,7 +61,9 @@ src/clover_v_sopra_steria_hackathon/
   wearable/            simulated bracelet data
   agent/               Strands tools and agent, deterministic pipeline
   signals/             optional engagement signal
-  app.py               Streamlit entry point
+  api.py               backend entry point (serves the frontend)
+frontend/
+  (Next.js / React)    caregiver UI, timeline view, follow-ups, report download
 tests/
   fixtures/            fictional transcripts and expected observations
 ```

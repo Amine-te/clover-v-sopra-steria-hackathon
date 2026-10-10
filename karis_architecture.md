@@ -18,7 +18,7 @@ flowchart TD
         E["📥 tool: transcribe<br/>returns transcript + S3 key"]
         E --> F["🔬 tool: extract_observations<br/>Bedrock Converse API<br/>strict JSON prompt<br/>→ list of Observations"]
         F --> G["🔍 tool: find_gaps<br/>daily checklist check<br/>(sleep / meals / meds / mood)<br/>→ missing categories"]
-        G -->|≤ 3 questions| H["💬 Caregiver answers<br/>in Streamlit UI"]
+        G -->|≤ 3 questions| H["💬 Caregiver answers<br/>in Next.js UI"]
         H -->|answers text| F2["🔬 tool: extract_observations<br/>(follow-up answers)"]
         F2 --> I
         F --> I["🛡️ tool: guardrail_check<br/>Bedrock Guardrails<br/>blocks: diagnosis / treatment<br/>/ prescription"]
@@ -28,7 +28,7 @@ flowchart TD
 
     K --> L[("S3<br/>observations/<br/>{date}/{id}.json")]
     L --> M["📅 Timeline<br/>local index<br/>query by date · category · severity"]
-    M --> N["🖥️ Streamlit UI<br/>Timeline view"]
+    M --> N["🖥️ Next.js UI<br/>Timeline view"]
 
     J --> NOTIFY
 
@@ -142,7 +142,7 @@ flowchart TD
     LLM --> CH
 
     subgraph CH ["Notification Channel  ·  NOTIFY_CHANNEL env var"]
-        MOCK["mock<br/>shown in Streamlit UI<br/>+ written to log"]
+        MOCK["mock<br/>shown in Next.js UI<br/>+ written to log"]
         SNS["sns<br/>AWS SNS SMS<br/>(sandbox required)"]
         SES["ses<br/>AWS SES email"]
         TEL["telegram<br/>Bot API"]
@@ -178,7 +178,7 @@ flowchart TD
         PDF["report_{date}.pdf<br/>(Doctolib / Dossier)"]
     end
 
-    OUT --> UI(["🖥️ Streamlit<br/>Download button"])
+    OUT --> UI(["🖥️ Next.js<br/>Download button"])
 
     style STORE fill:#0f172a,color:#e2e8f0,stroke:#38bdf8
 ```
@@ -194,7 +194,7 @@ sequenceDiagram
     participant Agent as 🤖 Strands Agent
     participant Notifier as 📤 notifier.py<br/>(NOTIFY_CHANNEL=mock)
     participant Log as 📋 mock_messages.jsonl<br/>(local file / S3)
-    participant UI as 🖥️ Streamlit UI
+    participant UI as 🖥️ Next.js UI
 
     Agent->>Notifier: send(recipient, body, observation_ids)
     Notifier->>Log: append SentMessage JSON
@@ -233,7 +233,7 @@ flowchart LR
         COMPARE --> LEVEL["engagement_level<br/>normal | low"]
     end
 
-    LEVEL -->|low| MODE["Streamlit switches<br/>to Minimal Mode<br/>· tap only<br/>· ≤ 2 questions<br/>· no guilt messaging"]
+    LEVEL -->|low| MODE["Next.js UI switches<br/>to Minimal Mode<br/>· tap only<br/>· ≤ 2 questions<br/>· no guilt messaging"]
     LEVEL -->|normal| FULL["Normal daily flow"]
 ```
 
