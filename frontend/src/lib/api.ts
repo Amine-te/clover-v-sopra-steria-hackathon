@@ -224,3 +224,89 @@ export async function extractObservations(payload: ExtractPayload): Promise<Extr
       : `Erreur du serveur (HTTP ${response.status}).`;
   return { ok: false, detail };
 }
+
+// Timeline store (POST /api/observations and GET /api/timeline).
+
+const TIMELINE_TIMEOUT_MS = 30_000;
+
+export type SaveObservationsResult =
+  | { ok: true; saved: number; keys: string[] }
+  | { ok: false; detail: string };
+
+export type TimelineResult =
+  | { ok: true; observations: Observation[]; count: number }
+  | { ok: false; detail: string };
+
+export type TimelineQuery = {
+  subject_id: string;
+  start?: string;
+  end?: string;
+  category?: string;
+  severity?: string;
+};
+
+function errorDetail(data: unknown, status: number): string {
+  return isRecord(data) && typeof data.detail === "string"
+    ? data.detail
+    : `Erreur du serveur (HTTP ${status}).`;
+}
+
+/** POST /api/observations: save a list of Observations, mapping every outcome to a typed result. */
+export async function saveObservations(observations: Observation[]): Promise<SaveObservationsResult> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMELINE_TIMEOUT_MS);
+  let response: Response;
+  let data: unknown;
+  try {
+    response = await fetch(`${getApiBaseUrl()}/api/observations`, {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify(observations),
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    data = await response.json().catch(() => null);
+  } catch {
+    return { ok: false, detail: `Impossible de joindre le serveur à ${getApiBaseUrl()}.` };
+  } finally {
+    clearTimeout(timer);
+  }
+
+  if (response.ok && isRecord(data) && typeof data.saved === "number" && Array.isArray(data.keys)) {
+    return { ok: true, saved: data.saved, keys: data.keys.filter((k): k is string => typeof k === "string") };
+  }
+  return { ok: false, detail: errorDetail(data, response.status) };
+}
+
+/** GET /api/timeline: fetch a subject's Observations in time order, mapping every outcome to a typed result. */
+export async function getTimeline(query: TimelineQuery): Promise<TimelineResult> {
+  const params = new URLSearchParams();
+  params.set("subject_id", query.subject_id);
+  if (query.start) params.set("start", query.start);
+  if (query.end) params.set("end", query.end);
+  if (query.category) params.set("category", query.category);
+  if (query.severity) params.set("severity", query.severity);
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMELINE_TIMEOUT_MS);
+  let response: Response;
+  let data: unknown;
+  try {
+    response = await fetch(`${getApiBaseUrl()}/api/timeline?${params.toString()}`, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    data = await response.json().catch(() => null);
+  } catch {
+    return { ok: false, detail: `Impossible de joindre le serveur à ${getApiBaseUrl()}.` };
+  } finally {
+    clearTimeout(timer);
+  }
+
+  if (response.ok && isRecord(data) && Array.isArray(data.observations) && typeof data.count === "number") {
+    return { ok: true, observations: data.observations.filter(isObservation), count: data.count };
+  }
+  return { ok: false, detail: errorDetail(data, response.status) };
+}

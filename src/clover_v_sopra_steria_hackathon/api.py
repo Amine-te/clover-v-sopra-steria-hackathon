@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .audio.routes import router as voice_router
 from .config import Settings, get_settings
 from .extraction.routes import router as extraction_router
+from .store.routes import router as store_router
 
 PACKAGE_NAME = "clover-v-sopra-steria-hackathon"
 APP_VERSION = version(PACKAGE_NAME)
@@ -49,6 +50,7 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
     api_router = APIRouter(prefix="/api")
     api_router.include_router(voice_router)
     api_router.include_router(extraction_router)
+    api_router.include_router(store_router)
     app.include_router(api_router)
 
     return app

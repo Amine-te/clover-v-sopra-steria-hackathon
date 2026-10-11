@@ -9,6 +9,9 @@ export default function Home() {
       <p>
         <Link href="/report-voice">Enregistrer un rapport vocal</Link>
       </p>
+      <p>
+        <Link href="/timeline">Voir la chronologie</Link>
+      </p>
     </main>
   );
 }

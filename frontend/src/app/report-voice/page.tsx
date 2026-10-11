@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   extractObservations,
   retryTranscription,
+  saveObservations,
   submitVoiceReport,
   type Observation,
   type VoiceReport,
@@ -23,6 +24,12 @@ type ExtractState =
   | { kind: "idle" }
   | { kind: "loading" }
   | { kind: "done"; observations: Observation[] }
+  | { kind: "error"; detail: string };
+
+type SaveState =
+  | { kind: "idle" }
+  | { kind: "loading" }
+  | { kind: "done"; saved: number }
   | { kind: "error"; detail: string };
 
 // Fixed demo identities for this slice; real subject/caregiver selection comes later.
@@ -52,6 +59,7 @@ function canRecord(): boolean {
 export default function ReportVoicePage() {
   const [state, setState] = useState<PageState>({ kind: "idle" });
   const [extract, setExtract] = useState<ExtractState>({ kind: "idle" });
+  const [save, setSave] = useState<SaveState>({ kind: "idle" });
   const [notice, setNotice] = useState<string | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -78,17 +86,25 @@ export default function ReportVoicePage() {
 
   function show(result: VoiceReportResult) {
     setExtract({ kind: "idle" });
+    setSave({ kind: "idle" });
     setState(result.ok ? { kind: "done", report: result.report } : { kind: "error", error: result.error });
   }
 
   async function analyse(transcript: string) {
     setExtract({ kind: "loading" });
+    setSave({ kind: "idle" });
     const result = await extractObservations({
       transcript,
       subject_id: DEMO_SUBJECT_ID,
       reported_by: DEMO_REPORTER_ID,
     });
     setExtract(result.ok ? { kind: "done", observations: result.observations } : { kind: "error", detail: result.detail });
+  }
+
+  async function persist(observations: Observation[]) {
+    setSave({ kind: "loading" });
+    const result = await saveObservations(observations);
+    setSave(result.ok ? { kind: "done", saved: result.saved } : { kind: "error", detail: result.detail });
   }
 
   async function send(file: Blob, filename: string) {
@@ -156,6 +172,9 @@ export default function ReportVoicePage() {
   if (notice) status = notice;
   else if (state.kind === "recording") status = "Enregistrement en cours… Cliquez sur « Arrêter et envoyer ».";
   else if (state.kind === "loading") status = state.message;
+  else if (save.kind === "loading") status = "Enregistrement des faits dans la chronologie…";
+  else if (save.kind === "done") status = `${save.saved} fait(s) enregistré(s).`;
+  else if (save.kind === "error") status = save.detail;
   else if (extract.kind === "loading") status = "Analyse des faits en cours, merci de patienter…";
   else if (extract.kind === "error") status = extract.detail;
   else if (extract.kind === "done")
@@ -227,13 +246,27 @@ export default function ReportVoicePage() {
         <section aria-labelledby="facts-heading">
           <h2 id="facts-heading">Faits extraits</h2>
           {extract.observations.length > 0 ? (
-            <ul lang="fr">
-              {extract.observations.map((obs) => (
-                <li key={obs.id}>
-                  [{obs.severity}] {obs.category} — {obs.value}
-                </li>
-              ))}
-            </ul>
+            <>
+              <ul lang="fr">
+                {extract.observations.map((obs) => (
+                  <li key={obs.id}>
+                    [{obs.severity}] {obs.category} — {obs.value}
+                  </li>
+                ))}
+              </ul>
+              <button
+                type="button"
+                onClick={() => persist(extract.observations)}
+                disabled={save.kind === "loading" || save.kind === "done"}
+              >
+                Enregistrer dans la chronologie
+              </button>
+              {save.kind === "done" && (
+                <p lang="fr">
+                  <Link href="/timeline">Voir la chronologie</Link>
+                </p>
+              )}
+            </>
           ) : (
             <p lang="fr">Aucun fait à signaler.</p>
           )}

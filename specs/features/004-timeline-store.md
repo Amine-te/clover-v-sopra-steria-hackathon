@@ -1,6 +1,6 @@
 # 004 Timeline store
 
-- **Status:** Draft
+- **Status:** Done
 - **Owner:**
 - **Needs:** 000
 
@@ -21,4 +21,4 @@ Stores Observations and returns them in time order for the UI, routing and repor
 
 ## Open questions
 
-- Is a local index needed, or is listing S3 fast enough?
+- ~~Is a local index needed, or is listing S3 fast enough?~~ **Resolved:** no index is needed for now. Queries list S3 under the subject (or day) prefix with pagination, then fetch and filter in memory — simple and fast enough for the hackathon's data volume. A per-subject index is noted as a future scaling step in `docs/steps/004-timeline-store.md`.
