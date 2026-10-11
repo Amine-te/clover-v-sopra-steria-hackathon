@@ -17,3 +17,12 @@ venv/
 samples/_downloads/
 samples/output/
 samples/*.out.json
+
+# Frontend (Next.js)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/next-env.d.ts
+
+# Local mock object storage
+.data/

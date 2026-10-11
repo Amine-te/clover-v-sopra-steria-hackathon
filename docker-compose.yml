@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: karis-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: karis
+      POSTGRES_USER: karis
+      POSTGRES_PASSWORD: karis
+    ports:
+      # Host 5432 is occupied by another local container, so Karis uses 5433.
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U karis -d karis"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    volumes:
+      - karis-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  karis-postgres-data:
